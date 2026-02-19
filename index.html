@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你的名字 | 技术开发者</title>
+    <!-- Tailwind CSS 快速构建样式 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 图标库 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 自定义 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF', // 主色调（科技蓝）
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        mono: ['Consolas', 'Monaco', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .bg-gradient {
+                background: linear-gradient(135deg, #165DFF 0%, #00B4D8 100%);
+            }
+            .typing-cursor {
+                animation: blink 1s step-end infinite;
+            }
+            @keyframes blink {
+                from, to { opacity: 1; }
+                50% { opacity: 0; }
+            }
+            /* 拼音转文字过渡动画 */
+            .pinyin-to-text {
+                transition: all 0.2s ease;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-light min-h-screen flex flex-col items-center justify-center p-4">
+    <!-- 主容器 -->
+    <div class="max-w-2xl w-full mx-auto text-center">
+        <!-- 头像 -->
+        <div class="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-primary/30 transition-all duration-500 hover:scale-110 hover:border-primary">
+            <!-- 替换成你的头像地址 -->
+            <img src="https://avatars.githubusercontent.com/u/your-user-id" alt="头像" class="w-full h-full object-cover">
+        </div>
+
+        <!-- 名称 + 打字机效果简介 -->
+        <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold mb-2 text-shadow">你的名字</h1>
+        <p class="text-xl font-mono mb-8 text-gray-300" id="typing-text">
+            <span id="typed" class="pinyin-to-text"></span><span class="typing-cursor">|</span>
+        </p>
+
+        <!-- 技术栈标签 -->
+        <div class="flex flex-wrap justify-center gap-3 mb-10">
+            <span class="px-4 py-2 bg-dark border border-primary/20 rounded-full text-primary transition-all hover:bg-primary/10">JavaScript</span>
+            <span class="px-4 py-2 bg-dark border border-primary/20 rounded-full text-primary transition-all hover:bg-primary/10">Python</span>
+            <span class="px-4 py-2 bg-dark border border-primary/20 rounded-full text-primary transition-all hover:bg-primary/10">React</span>
+            <span class="px-4 py-2 bg-dark border border-primary/20 rounded-full text-primary transition-all hover:bg-primary/10">Docker</span>
+            <span class="px-4 py-2 bg-dark border border-primary/20 rounded-full text-primary transition-all hover:bg-primary/10">Git</span>
+            <!-- 可自行添加更多技术栈 -->
+        </div>
+
+        <!-- 社交链接 -->
+        <div class="flex justify-center gap-6 text-2xl">
+            <a href="https://github.com/your-username" target="_blank" class="text-gray-400 transition-all hover:text-primary hover:scale-125" title="GitHub">
+                <i class="fa fa-github"></i>
+            </a>
+            <a href="mailto:your-email@example.com" class="text-gray-400 transition-all hover:text-primary hover:scale-125" title="邮箱">
+                <i class="fa fa-envelope"></i>
+            </a>
+            <a href="https://blog.your-domain.com" target="_blank" class="text-gray-400 transition-all hover:text-primary hover:scale-125" title="博客">
+                <i class="fa fa-globe"></i>
+            </a>
+            <a href="https://linkedin.com/in/your-name" target="_blank" class="text-gray-400 transition-all hover:text-primary hover:scale-125" title="LinkedIn">
+                <i class="fa fa-linkedin"></i>
+            </a>
+            <!-- 可自行添加更多社交平台 -->
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="mt-16 text-sm text-gray-500">
+            <p>Built with ❤️ &nbsp; | &nbsp; © 2025 你的名字</p>
+        </footer>
+    </div>
+
+    <!-- 打字机效果脚本（词语级Token + 撇号拼音优化版） -->
+    <script>
+        // 定义【词语级】拼音-中文token映射数组（一一对应）
+        // 拼音用撇号连接，中文按词语拆分
+        const textTokenPairs = [
+            {
+                // 全栈开发者 → 拆分为「全栈」「开发者」两个词语token
+                pinyinTokens: ["quan'zhan", "kai'fa'zhe"],
+                textTokens: ["全栈", "开发者"]
+            },
+            {
+                // 热爱开源的技术人 → 拆分为「热爱」「开源」「的」「技术人」
+                pinyinTokens: ["re'ai", "kai'yuan", "de", "ji'shu'ren"],
+                textTokens: ["热爱", "开源", "的", "技术人"]
+            },
+            {
+                // 持续学习，持续构建 → 拆分为「持续学习」「，」「持续构建」
+                pinyinTokens: ["chi'xu'xue'xi", "，", "chi'xu'gou'jian"],
+                textTokens: ["持续学习", "，", "持续构建"]
+            }
+        ];
+        
+        let phraseIndex = 0;    // 当前显示的是第几段文本
+        let tokenIndex = 0;     // 当前处理的是第几个词语token
+        let charIndex = 0;      // 当前token内的第几个字符
+        let isPinyinPhase = true; // 是否处于拼音打字阶段
+        const typedElement = document.getElementById('typed');
+        
+        // 核心打字函数：逐字符打【词语级】拼音token → 替换成对应中文词语token
+        function typeToken() {
+            const currentPhrase = textTokenPairs[phraseIndex];
+            const currentPinyinToken = currentPhrase.pinyinTokens[tokenIndex];
+            const currentTextToken = currentPhrase.textTokens[tokenIndex];
+
+            if (isPinyinPhase) {
+                // 1. 拼音打字阶段：逐字符打出当前【词语级】拼音token（带撇号）
+                if (charIndex < currentPinyinToken.length) {
+                    typedElement.textContent += currentPinyinToken.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeToken, 60); // 拼音字符打字速度（ms/字符）
+                } else {
+                    // 2. 当前拼音token打完 → 替换成对应中文词语token
+                    setTimeout(() => {
+                        // 替换逻辑：删除刚打的拼音token，添加中文token
+                        const currentText = typedElement.textContent;
+                        const newText = currentText.slice(0, -currentPinyinToken.length) + currentTextToken;
+                        typedElement.textContent = newText;
+                        
+                        isPinyinPhase = false;
+                        charIndex = 0;
+                        tokenIndex++; // 切换到下一个词语token
+                        
+                        // 检查是否打完当前整段
+                        if (tokenIndex < currentPhrase.pinyinTokens.length) {
+                            // 还有下一个token → 继续打拼音
+                            isPinyinPhase = true;
+                            setTimeout(typeToken, 200); // 词语token之间的间隔
+                        } else {
+                            // 当前整段打完 → 判断是否是最后一段
+                            if (phraseIndex === textTokenPairs.length - 1) {
+                                // 最后一段：永久保留，终止动画
+                                return;
+                            }
+                            // 非最后一段：停留2秒后删除
+                            setTimeout(erasePhrase, 2000);
+                        }
+                    }, 300); // 拼音打完后停留时间（替换前的小停顿）
+                }
+            }
+        }
+        
+        // 删除整段文本（逐字符删除）
+        function erasePhrase() {
+            const currentText = typedElement.textContent;
+            if (currentText.length > 0) {
+                typedElement.textContent = currentText.slice(0, -1);
+                setTimeout(erasePhrase, 80); // 删除速度
+            } else {
+                // 重置状态，切换到下一段
+                phraseIndex = (phraseIndex + 1) % textTokenPairs.length;
+                tokenIndex = 0;
+                charIndex = 0;
+                isPinyinPhase = true;
+                setTimeout(typeToken, 800); // 段落之间的间隔
+            }
+        }
+        
+        // 页面加载后启动动画
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(typeToken, 1000);
+        });
+
+        // 平滑滚动（备用）
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
